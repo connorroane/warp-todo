@@ -33,6 +33,27 @@ insert into auth.users (
   ''
 );
 
+-- Create identity for the test user so email/password login works (required by GoTrue v2+)
+insert into auth.identities (
+  id,
+  user_id,
+  identity_data,
+  provider,
+  provider_id,
+  last_sign_in_at,
+  created_at,
+  updated_at
+) values (
+  gen_random_uuid(),
+  'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  jsonb_build_object('sub', 'a1b2c3d4-e5f6-7890-abcd-ef1234567890', 'email', 'testuser@example.com'),
+  'email',
+  'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
+  now(),
+  now(),
+  now()
+);
+
 -- Seed todos for the test user
 insert into public.todos (user_id, title, description, time_commitment, finished)
 values
