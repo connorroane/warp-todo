@@ -1,12 +1,60 @@
+/**
+ * Seed script for populating the todos table via the Supabase client.
+ *
+ * For local development, the recommended approach is to use `supabase/seed.sql`
+ * which runs automatically on `supabase start` and `supabase db reset`.
+ *
+ * This script is a convenience for seeding a running Supabase instance
+ * (local or remote) via the Management API when you can't run `supabase db reset`.
+ *
+ * Usage:
+ *   npx tsx scripts/seed-todos.ts --user-email <email>
+ *   npx tsx scripts/seed-todos.ts --user-email <email> --dry-run
+ *
+ * Required env vars:
+ *   NEXT_PUBLIC_SUPABASE_URL   - Supabase project URL
+ *   SUPABASE_SERVICE_ROLE_KEY  - Service role key (bypasses RLS)
+ */
+
 import { createClient } from "@supabase/supabase-js";
 
 const SEED_TODOS = [
-  { title: "Buy groceries", is_complete: false },
-  { title: "Read a chapter of my book", is_complete: false },
-  { title: "Schedule dentist appointment", is_complete: false },
-  { title: "Reply to Alice's email", is_complete: true },
-  { title: "Fix the leaky kitchen faucet", is_complete: false },
-  { title: "Submit expense report", is_complete: true },
+  {
+    title: "Buy groceries",
+    description: "Milk, eggs, bread, and vegetables",
+    time_commitment: "30 minutes",
+    finished: false,
+  },
+  {
+    title: "Read a chapter of my book",
+    description: 'Continue reading "Designing Data-Intensive Applications"',
+    time_commitment: "1 hour",
+    finished: false,
+  },
+  {
+    title: "Schedule dentist appointment",
+    description: "Call Dr. Smith's office for a cleaning",
+    time_commitment: "10 minutes",
+    finished: false,
+  },
+  {
+    title: "Reply to Alice's email",
+    description: "Respond about the project timeline",
+    time_commitment: "15 minutes",
+    finished: true,
+  },
+  {
+    title: "Fix the leaky kitchen faucet",
+    description: "Replace the washer and check the valve",
+    time_commitment: "2 hours",
+    finished: false,
+  },
+  {
+    title: "Submit expense report",
+    description: "March expenses for client travel",
+    time_commitment: "20 minutes",
+    finished: true,
+  },
 ];
 
 function parseArgs(args: string[]) {
@@ -30,11 +78,11 @@ async function main() {
   const flags = parseArgs(process.argv.slice(2));
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const secretKey = process.env.SUPABASE_SECRET_KEY;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!supabaseUrl || !secretKey) {
+  if (!supabaseUrl || !serviceRoleKey) {
     console.error(
-      "Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
+      "Missing required environment variables: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
     );
     process.exit(1);
   }
@@ -53,15 +101,15 @@ async function main() {
   if (flags.dryRun) {
     console.log("Todos that would be inserted:");
     for (const todo of SEED_TODOS) {
-      const status = todo.is_complete ? "✓" : "○";
-      console.log(`  ${status} ${todo.title}`);
+      const status = todo.finished ? "✓" : "○";
+      console.log(`  ${status} ${todo.title} (${todo.time_commitment})`);
     }
     console.log("\nDry run complete. No changes were made.");
     return;
   }
 
   // Use service role key to bypass RLS
-  const supabase = createClient(supabaseUrl, secretKey, {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
@@ -86,7 +134,9 @@ async function main() {
   const rows = SEED_TODOS.map((todo) => ({
     user_id: user.id,
     title: todo.title,
-    is_complete: todo.is_complete,
+    description: todo.description,
+    time_commitment: todo.time_commitment,
+    finished: todo.finished,
   }));
 
   const { data, error } = await supabase.from("todos").insert(rows).select();
@@ -98,7 +148,7 @@ async function main() {
 
   console.log(`\nSuccessfully inserted ${data.length} todos:`);
   for (const todo of data) {
-    const status = todo.is_complete ? "✓" : "○";
+    const status = todo.finished ? "✓" : "○";
     console.log(`  ${status} ${todo.title} (${todo.id})`);
   }
 }
