@@ -6,7 +6,9 @@ import { createClient } from "@/lib/supabase/client";
 interface Todo {
   id: string;
   title: string;
-  is_complete: boolean;
+  description: string | null;
+  time_commitment: string | null;
+  finished: boolean;
   created_at: string;
 }
 
@@ -48,16 +50,16 @@ export default function TodoList() {
     }
   }
 
-  async function toggleTodo(id: string, isComplete: boolean) {
+  async function toggleTodo(id: string, finished: boolean) {
     const { error } = await supabase
       .from("todos")
-      .update({ is_complete: !isComplete })
+      .update({ finished: !finished })
       .eq("id", id);
 
     if (!error) {
       setTodos(
         todos.map((t) =>
-          t.id === id ? { ...t, is_complete: !isComplete } : t
+          t.id === id ? { ...t, finished: !finished } : t
         )
       );
     }
@@ -106,13 +108,13 @@ export default function TodoList() {
             >
               <input
                 type="checkbox"
-                checked={todo.is_complete}
-                onChange={() => toggleTodo(todo.id, todo.is_complete)}
+                checked={todo.finished}
+                onChange={() => toggleTodo(todo.id, todo.finished)}
                 className="h-4 w-4 accent-blue-600"
               />
               <span
                 className={`flex-1 text-sm ${
-                  todo.is_complete
+                  todo.finished
                     ? "line-through text-gray-400"
                     : "text-gray-800"
                 }`}
