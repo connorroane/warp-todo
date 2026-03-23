@@ -29,10 +29,10 @@ function parseArgs(args: string[]) {
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
 
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const secretKey = process.env.SUPABASE_SECRET_KEY;
 
-  if (!supabaseUrl || !serviceRoleKey) {
+  if (!supabaseUrl || !secretKey) {
     console.error(
       "Missing required environment variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY"
     );
@@ -61,7 +61,7 @@ async function main() {
   }
 
   // Use service role key to bypass RLS
-  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+  const supabase = createClient(supabaseUrl, secretKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
