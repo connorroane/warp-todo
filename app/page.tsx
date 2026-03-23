@@ -1,5 +1,7 @@
-import { redirect } from "next/navigation";
 
 export default function Home() {
-  redirect("/todos");
+  // redirect("/todos");
+  return <div>
+    home page
+  </div>
 }
