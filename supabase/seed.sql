@@ -3,6 +3,7 @@
 
 -- Create a test user in auth.users for local development.
 -- The password is "password123" (hashed with bcrypt).
+-- All varchar/text columns that GoTrue scans into Go strings must be non-NULL.
 insert into auth.users (
   id,
   instance_id,
@@ -11,12 +12,17 @@ insert into auth.users (
   email,
   encrypted_password,
   email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_new,
+  email_change,
+  phone,
   raw_app_meta_data,
   raw_user_meta_data,
+  is_sso_user,
+  is_anonymous,
   created_at,
-  updated_at,
-  confirmation_token,
-  recovery_token
+  updated_at
 ) values (
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   '00000000-0000-0000-0000-000000000000',
@@ -25,12 +31,17 @@ insert into auth.users (
   'testuser@example.com',
   crypt('password123', gen_salt('bf')),
   now(),
+  '',
+  '',
+  '',
+  '',
+  '',
   '{"provider": "email", "providers": ["email"]}',
   '{"name": "Test User"}',
+  false,
+  false,
   now(),
-  now(),
-  '',
-  ''
+  now()
 );
 
 -- Create identity for the test user so email/password login works (required by GoTrue v2+)
